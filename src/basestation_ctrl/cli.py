@@ -2,32 +2,46 @@ import click
 from basestation_ctrl.basestation_ctrl import BasestationCtrl
 
 
+def common_options(function):
+    function = click.option('--interface', '-i', default=0,
+                            help='Which Bluetooth interface to use. An integer <n> corresponds to the'
+                            ' device "/dev/hci<n>" ', show_default=True)(function)
+    function = click.option('--tries', '-n', default=3,
+                            help='Number of tries when connecting fails.', show_default=True)(function)
+    function = click.option('--pause', '-p', default=5.,
+                            help='Seconds between of connection re-tries.', show_default=True)(function)
+    return function
+
+
 @click.group()
-def cli():
+@common_options
+def cli(interface, tries, pause):
     pass
 
 
 @click.command()
-# @click.option('--interface', '-i', default=0, help='Which Bluetooth interface to use.')
-# @click.option('--mac_addresses', '-a', help='MAC address of the basestation.'
-#              ' Multiple addresses can be entered, separated by comma.')
+@common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def sleep(mac_address):
-    lhctrl = BasestationCtrl()
-    lhctrl.sleep(mac_address)
+def sleep(mac_address, interface, tries, pause):
+    lhctrl = BasestationCtrl(interface)
+    lhctrl.sleep(mac_address, tries, pause)
 
 
 @click.command()
+@common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def wake(mac_address):
-    lhctrl = BasestationCtrl()
-    lhctrl.wake(mac_address)
+def wake(mac_address, interface, tries, pause):
+    lhctrl = BasestationCtrl(interface)
+    lhctrl.wake(mac_address, tries, pause)
 
 
 @click.command()
-def scan():
-    lhctrl = BasestationCtrl()
-    results = lhctrl.scan()
+@common_options
+@click.option('--timeout', default=10., help='Scan timeout in seconds.', show_default=True)
+@click.option('--show_all', default=10., help='Show complete scan results, not only the devices starting with "LHB-".', show_default=True)
+def scan(interface, tries, pause, timeout, show_all):
+    lhctrl = BasestationCtrl(interface)
+    results = lhctrl.scan(timeout, show_all)
     print(results)
 
 
