@@ -44,6 +44,8 @@ Tested on Arch Linux (2021-11-20) with Python 3.9.7 and SteamVR Base Station 2.0
 
 Usage
 =====
+(Note: I recommend using pipx instead of pip)
+
 
 * Option A: Clone this repo and install from there:
   ::
@@ -69,3 +71,8 @@ Known Issues
 ============
 * root (e.g. `sudo`) permissions are required for a scan. See: https://github.com/IanHarvey/bluepy/issues/313
 
+About
+=====
+
+basestation-ctrl is based on `lh2ctrl <https://github.com/risa2000/lh2ctrl>`_
+and `basestation <https://github.com/jariz/basestation>`_.
