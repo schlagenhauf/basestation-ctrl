@@ -8,23 +8,28 @@ def cli():
 
 
 @click.command()
-def sleep():
-    macs = ["e0:81:5e:b8:20:fc"]
+# @click.option('--interface', '-i', default=0, help='Which Bluetooth interface to use.')
+# @click.option('--mac_addresses', '-a', help='MAC address of the basestation.'
+#              ' Multiple addresses can be entered, separated by comma.')
+@click.argument('MAC_ADDRESS', nargs=-1)
+def sleep(mac_address):
     lhctrl = BasestationCtrl()
-    lhctrl.sleep(macs)
+    lhctrl.sleep(mac_address)
 
 
 @click.command()
-def wake():
-    macs = ["e0:81:5e:b8:20:fc"]
+@click.argument('MAC_ADDRESS', nargs=-1)
+def wake(mac_address):
     lhctrl = BasestationCtrl()
-    lhctrl.wake(macs)
+    lhctrl.wake(mac_address)
 
 
 @click.command()
 def scan():
     lhctrl = BasestationCtrl()
-    lhctrl.scan()
+    results = lhctrl.scan()
+    print(results)
+
 
 cli.add_command(sleep)
 cli.add_command(wake)

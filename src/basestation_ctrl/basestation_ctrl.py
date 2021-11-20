@@ -7,6 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 class BasestationCtrl:
+    NUMBER_OF_TRIES = 3
+    TRIES_PAUSE_SECS = 5
+
+    # adtype of the filed "Complete Local Name", see "Generic Access Profile" in the Bluetooth Specs
+    LOCALNAME_ADTYPE = 0x09
+
     def __init__(self, interface=0):
         self.interface = interface
 
@@ -15,34 +21,26 @@ class BasestationCtrl:
         scanner = btle.Scanner()
         devices = scanner.scan(timeout_secs)
 
-        # adtype of the filed "Complete Local Name", see "Generic Access Profile" in the Bluetooth Specs
-        localname_adtype = 0x09
-
+        results = {}
         for dev in devices:
-            #print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-            if dev.getValueText(localname_adtype).startswith("LHB-"):
-                print(f"Found a Lighthouse Base Station: {dev.addr}")
-            elif print_all:
-                print(f"Found a device that is probably not a Lighthouse Base Station: {dev.addr}")
+            localname = dev.getValueText(BasestationCtrl.LOCALNAME_ADTYPE)
+            if localname.startswith("LHB-"):
+                results[localname] = dev.addr
 
-    def sleep(self, macs, tries=10, tries_pause=2):
+        return results
+
+    def sleep(self, macs, try_count=NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
         for mac in macs:
-            lhv2 = Basestation(mac, self.interface)
-            lhv2.connect(tries, tries_pause)
-            logger.info(f'Shutting down {lhv2.getName()}')
-            lhv2.powerOff()
-            lhv2.disconnect()
+            base = Basestation(mac, self.interface)
+            base.connect(try_count, try_pause)
+            logger.info(f'Shutting down {base.name}')
+            base.power_off()
+            base.disconnect()
 
-    def wake(self, macs, tries=2, tries_pause=5):
+    def wake(self, macs, num_tries=NUMBER_OF_TRIES, tries_pause=TRIES_PAUSE_SECS):
         for mac in macs:
-            lhv2 = Basestation(mac, self.interface)
-            lhv2.connect(tries, tries_pause)
-            logger.info(f'Waking up {lhv2.getName()}')
-            lhv2.powerOn()
-            lhv2.disconnect()
-
-    def identify(self):
-        pass
-
-    def status(self):
-        pass
+            base = Basestation(mac, self.interface)
+            base.connect(num_tries, tries_pause)
+            logger.info(f'Waking up {base.name}')
+            base.power_on()
+            base.disconnect()

@@ -16,34 +16,27 @@ class Basestation:
     POWER_ON = b'\x01'
     POWER_OFF = b'\x00'
 
-    # Defaults
-    TRY_COUNT = 5
-    TRY_PAUSE = 2
-    GLOBAL_TIMEOUT = 0
-
-    def __init__(self, macAddr, hciIface):
+    def __init__(self, mac_addr, hci_interface):
         self.dev = btle.Peripheral()
-        self.macAddr = macAddr
-        self.hciIface = hciIface
+        self.mac_addr = mac_addr
+        self.hci_interface = hci_interface
         self.characteristics = None
         self.name = None
 
     def connect(self, try_count, try_pause):
         for tries in range(try_count):
             try:
-                logger.info(f'Connecting to {self.macAddr}')
-                self.dev.connect(self.macAddr, iface=self.hciIface, addrType=btle.ADDR_TYPE_RANDOM)
+                logger.info(f'Connecting to {self.mac_addr}')
+                self.dev.connect(self.mac_addr, iface=self.hci_interface,
+                                 addrType=btle.ADDR_TYPE_RANDOM)
                 logger.info(f'Device state: {self.dev.getState()}')
 
-                if self.characteristics is None:
-                    chars = self.dev.getCharacteristics()
-                    self.characteristics = dict([(c.uuid, c) for c in chars])
+                chars = self.dev.getCharacteristics()
+                self.characteristics = dict([(c.uuid, c) for c in chars])
 
-                if self.name is None:
-                    self.name = self.getCharacteristic(
-                        btle.AssignedNumbers.device_name).read().decode()
+                self.name = self.characteristics[btle.AssignedNumbers.device_name].read().decode()
 
-                mode = self.getCharacteristic(self.LHV2_GATT_CHAR_MODE_UUID).read()
+                mode = self.characteristics[self.LHV2_GATT_CHAR_MODE_UUID].read()
                 logger.info(f'Connected to {self.name} ({self.dev.addr}, mode={mode.hex()})')
 
                 break
@@ -59,19 +52,13 @@ class Basestation:
         logger.info(f'Diconnecting from {self.name}')
         self.dev.disconnect()
 
-    def getCharacteristic(self, uuid):
-        return self.characteristics[uuid]
-
-    def writeCharacteristic(self, uuid, val):
-        charc = self.getCharacteristic(uuid)
+    def write_characteristic(self, uuid, val):
+        charc = self.characteristics[uuid]
         charc.write(val, withResponse=True)
         logger.info(f'Writing {val.hex()} to {charc.uuid.getCommonName()}')
 
-    def getName(self):
-        return self.name
+    def power_on(self):
+        self.write_characteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_ON)
 
-    def powerOn(self):
-        self.writeCharacteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_ON)
-
-    def powerOff(self):
-        self.writeCharacteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_OFF)
+    def power_off(self):
+        self.write_characteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_OFF)
