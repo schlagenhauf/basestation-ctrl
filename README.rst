@@ -47,14 +47,25 @@ Then consult
 
 for details.
 
+Examples
+--------
+
+::
+
+    $ sudo basestation-ctrl scan
+    aa:bb:cc:dd:ee:ff 11:22:33:44:55:66
+    $ basestation-ctrl wake aa:bb:cc:dd:ee:ff 11:22:33:44:55:66
+    $ basestation-ctrl sleep aa:bb:cc:dd:ee:ff 11:22:33:44:55:66
+
 ToDos
 =====
-* Detect if Bluetooth is available and turned on
+* Detect if Bluetooth interface is available and turned on
 * Add commands for identifying the base stations and printing their status
 
 Known Issues
 ============
 * root (e.g. `sudo`) permissions are required for a scan. See: https://github.com/IanHarvey/bluepy/issues/313
+* Hickups when trying to connect too often
 
 About
 =====
