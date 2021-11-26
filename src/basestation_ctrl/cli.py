@@ -54,7 +54,7 @@ def scan(interface, tries, pause, timeout, show_all):
     """Scans for basestations in the vicinity (requires root permissions)"""
     lhctrl = BasestationCtrl(interface)
     results = lhctrl.scan(timeout, show_all)
-    print(results)
+    print(' '.join(results.values()))
 
 
 cli.add_command(sleep)
