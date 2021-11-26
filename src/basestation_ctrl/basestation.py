@@ -2,7 +2,7 @@ from bluepy import btle
 import logging
 import time
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -24,12 +24,12 @@ class Basestation:
         self.name = None
 
     def connect(self, try_count, try_pause):
-        for tries in range(try_count):
+        tries = 0
+        while True:
             try:
                 logger.info(f'Connecting to {self.mac_addr}')
                 self.dev.connect(self.mac_addr, iface=self.hci_interface,
                                  addrType=btle.ADDR_TYPE_RANDOM)
-                logger.info(f'Device state: {self.dev.getState()}')
 
                 chars = self.dev.getCharacteristics()
                 self.characteristics = dict([(c.uuid, c) for c in chars])
@@ -42,23 +42,33 @@ class Basestation:
                 break
 
             except btle.BTLEDisconnectError as e:
-                logger.info(e)
-                logger.warning(
-                    f'Failed to connect ({tries+1}/{try_count}). Retrying in {try_pause}s...')
-                time.sleep(try_pause)
-                continue
+                logger.debug(str(e))
+                logger.warning(f'Failed to connect ({tries+1}/{try_count})')
+
+                tries += 1
+                if tries < try_count:
+                    logger.info(f'Retrying in {try_pause}s...')
+                    time.sleep(try_pause)
+                    continue
+                else:
+                    logger.error(f'Reached maximum number of tries. Exiting.')
+                    raise e
+
+        logger.debug(f'Device state: info{self.dev.getState()}')
 
     def disconnect(self):
-        logger.info(f'Diconnecting from {self.name}')
+        logger.info(f'Disconnecting from {self.name}')
         self.dev.disconnect()
 
     def write_characteristic(self, uuid, val):
         charc = self.characteristics[uuid]
         charc.write(val, withResponse=True)
-        logger.info(f'Writing {val.hex()} to {charc.uuid.getCommonName()}')
+        logger.debug(f'Writing {val.hex()} to {charc.uuid.getCommonName()}')
 
     def power_on(self):
+        logger.debug(f'Powering on {self.mac_addr}')
         self.write_characteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_ON)
 
     def power_off(self):
+        logger.debug(f'Powering off {self.mac_addr}')
         self.write_characteristic(self.LHV2_GATT_CHAR_POWER_CTRL_UUID, self.POWER_OFF)
