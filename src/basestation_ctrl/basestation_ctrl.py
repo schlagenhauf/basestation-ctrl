@@ -2,8 +2,7 @@ from basestation_ctrl.basestation import Basestation
 from bluepy import btle
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("basestation-ctrl")
 
 
 class BasestationCtrl:
@@ -32,7 +31,7 @@ class BasestationCtrl:
     def sleep(self, macs, max_tries=MAX_NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
         for mac in macs:
             base = Basestation(mac, self.interface)
-            logger.info(f'Shutting down {base.name}')
+            logger.info(f'Sending to sleep {mac}')
             try:
                 base.power_off(max_tries, try_pause)
             except RuntimeError as e:
@@ -41,7 +40,7 @@ class BasestationCtrl:
     def wake(self, macs, max_tries=MAX_NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
         for mac in macs:
             base = Basestation(mac, self.interface)
-            logger.info(f'Waking up {base.name}')
+            logger.info(f'Waking up {mac}')
             try:
                 base.power_on(max_tries, try_pause)
             except RuntimeError as e:

@@ -2,8 +2,7 @@ from bluepy import btle
 import logging
 import time
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("basestation-ctrl")
 
 
 class Basestation:
@@ -63,7 +62,7 @@ class Basestation:
 
                 tries += 1
                 if tries < max_tries:
-                    logger.info(f'Retrying in {try_pause}s...')
+                    logger.info(f'Failed to connect. Retrying in {try_pause}s...')
                     time.sleep(try_pause)
                     continue
                 else:

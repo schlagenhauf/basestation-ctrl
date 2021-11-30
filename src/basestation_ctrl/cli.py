@@ -1,5 +1,14 @@
 import click
+import click_log
 from basestation_ctrl.basestation_ctrl import BasestationCtrl
+import logging
+
+logger = logging.getLogger("basestation-ctrl")
+
+
+def loglevel_callback(ctx, param, value):
+    logger.setLevel(value)
+    logging.basicConfig(level=value)
 
 
 def common_options(function):
@@ -13,12 +22,15 @@ def common_options(function):
     function = click.option('--pause', '-p', default=1.,
                             help='Seconds between of connection re-tries.',
                             show_default=True)(function)
+    function = click.option('--loglevel', '-l', type=click.Choice(list(logging._nameToLevel.keys())),
+                            default='ERROR', show_default=True,
+                            callback=loglevel_callback)(function)
     return function
 
 
 @click.group()
 @common_options
-def cli(interface, max_tries, pause):
+def cli(interface, max_tries, pause, loglevel):
     """basestation-ctrl - A python library and CLI to wake up / power down SteamVR (Lighthouse)
     Base Stations. It currently only works for base stations v2.
 
@@ -29,7 +41,7 @@ def cli(interface, max_tries, pause):
 @click.command()
 @common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def sleep(mac_address, interface, max_tries, pause):
+def sleep(mac_address, interface, max_tries, pause, loglevel):
     """Sends basestation into sleep mode"""
     lhctrl = BasestationCtrl(interface)
     lhctrl.sleep(mac_address, max_tries, pause)
@@ -38,7 +50,7 @@ def sleep(mac_address, interface, max_tries, pause):
 @click.command()
 @common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def wake(mac_address, interface, max_tries, pause):
+def wake(mac_address, interface, max_tries, pause, loglevel):
     """Wakes up basestation from sleep mode"""
     lhctrl = BasestationCtrl(interface)
     lhctrl.wake(mac_address, max_tries, pause)
