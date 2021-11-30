@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class BasestationCtrl:
-    NUMBER_OF_TRIES = 3
+    MAX_NUMBER_OF_TRIES = 3
     TRIES_PAUSE_SECS = 5
 
     # adtype of the filed "Complete Local Name", see "Generic Access Profile" in the Bluetooth Specs
@@ -29,18 +29,20 @@ class BasestationCtrl:
 
         return results
 
-    def sleep(self, macs, try_count=NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
+    def sleep(self, macs, max_tries=MAX_NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
         for mac in macs:
             base = Basestation(mac, self.interface)
-            base.connect(try_count, try_pause)
             logger.info(f'Shutting down {base.name}')
-            base.power_off()
-            base.disconnect()
+            try:
+                base.power_off(max_tries, try_pause)
+            except RuntimeError as e:
+                logger.error(e)
 
-    def wake(self, macs, num_tries=NUMBER_OF_TRIES, tries_pause=TRIES_PAUSE_SECS):
+    def wake(self, macs, max_tries=MAX_NUMBER_OF_TRIES, try_pause=TRIES_PAUSE_SECS):
         for mac in macs:
             base = Basestation(mac, self.interface)
-            base.connect(num_tries, tries_pause)
             logger.info(f'Waking up {base.name}')
-            base.power_on()
-            base.disconnect()
+            try:
+                base.power_on(max_tries, try_pause)
+            except RuntimeError as e:
+                logger.error(e)

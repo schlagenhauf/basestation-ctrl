@@ -7,10 +7,10 @@ def common_options(function):
                             help='Which Bluetooth interface to use.'
                             ' An integer <n> corresponds to the'
                             ' device "/dev/hci<n>" ', show_default=True)(function)
-    function = click.option('--tries', '-n', default=3,
-                            help='Number of tries when connecting fails.',
+    function = click.option('--max_tries', '-n', default=10,
+                            help='Number of tries before giving up to connect.',
                             show_default=True)(function)
-    function = click.option('--pause', '-p', default=5.,
+    function = click.option('--pause', '-p', default=1.,
                             help='Seconds between of connection re-tries.',
                             show_default=True)(function)
     return function
@@ -18,7 +18,7 @@ def common_options(function):
 
 @click.group()
 @common_options
-def cli(interface, tries, pause):
+def cli(interface, max_tries, pause):
     """basestation-ctrl - A python library and CLI to wake up / power down SteamVR (Lighthouse)
     Base Stations. It currently only works for base stations v2.
 
@@ -29,19 +29,19 @@ def cli(interface, tries, pause):
 @click.command()
 @common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def sleep(mac_address, interface, tries, pause):
+def sleep(mac_address, interface, max_tries, pause):
     """Sends basestation into sleep mode"""
     lhctrl = BasestationCtrl(interface)
-    lhctrl.sleep(mac_address, tries, pause)
+    lhctrl.sleep(mac_address, max_tries, pause)
 
 
 @click.command()
 @common_options
 @click.argument('MAC_ADDRESS', nargs=-1)
-def wake(mac_address, interface, tries, pause):
+def wake(mac_address, interface, max_tries, pause):
     """Wakes up basestation from sleep mode"""
     lhctrl = BasestationCtrl(interface)
-    lhctrl.wake(mac_address, tries, pause)
+    lhctrl.wake(mac_address, max_tries, pause)
 
 
 @click.command()
