@@ -1,5 +1,4 @@
 import click
-import click_log
 from basestation_ctrl.basestation_ctrl import BasestationCtrl
 import logging
 
