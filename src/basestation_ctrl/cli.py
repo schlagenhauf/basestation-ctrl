@@ -61,7 +61,7 @@ def wake(mac_address, interface, max_tries, pause, loglevel):
 @click.option('--show_all', default=10.,
               help='Show complete scan results, not only the devices starting with "LHB-".',
               show_default=True)
-def scan(interface, tries, pause, timeout, show_all):
+def scan(interface, max_tries, pause, loglevel, timeout, show_all):
     """Scans for basestations in the vicinity (requires root permissions)"""
     lhctrl = BasestationCtrl(interface)
     results = lhctrl.scan(timeout, show_all)
