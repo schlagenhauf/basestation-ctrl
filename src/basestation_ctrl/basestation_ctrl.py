@@ -23,7 +23,7 @@ class BasestationCtrl:
         results = {}
         for dev in devices:
             localname = dev.getValueText(BasestationCtrl.LOCALNAME_ADTYPE)
-            if print_all or localname.startswith("LHB-"):
+            if print_all or (localname and localname.startswith("LHB-")):
                 results[localname] = dev.addr
 
         return results
